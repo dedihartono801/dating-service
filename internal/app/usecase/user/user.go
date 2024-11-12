@@ -51,7 +51,12 @@ func (s *service) Swipe(ctx context.Context, request *entity.SwipeRequest) error
 		return err
 	}
 
-	if request.SwipeType == constant.Like {
+	match, err := s.repository.CheckMatch(ctx, *request)
+	if err != nil {
+		return err
+	}
+
+	if request.SwipeType == constant.Like && match {
 		if err := s.repository.CreateMatch(ctx, tx, *request); err != nil {
 			s.repository.RollbackTx(ctx, tx)
 			return err

@@ -17,6 +17,7 @@ type UserRepository interface {
 	CheckUserSwipped(ctx context.Context, request entity.SwipeRequest) (resp bool, err error)
 	CountUserSwipped(ctx context.Context) (int, error)
 	CheckPremium(ctx context.Context) (*entity.GetUserDetailResponse, error)
+	CheckMatch(ctx context.Context, request entity.SwipeRequest) (resp bool, err error)
 	BeginTx(ctx context.Context) (*sql.Tx, error)
 	RollbackTx(ctx context.Context, tx *sql.Tx) error
 	CommitTx(ctx context.Context, tx *sql.Tx) error
@@ -136,4 +137,15 @@ func (r *userRepository) CheckPremium(ctx context.Context) (*entity.GetUserDetai
 	}
 
 	return &response, nil
+}
+
+func (r *userRepository) CheckMatch(ctx context.Context, request entity.SwipeRequest) (resp bool, err error) {
+	valueCtx := helper.GetValueContext(ctx)
+	query := `SELECT EXISTS (SELECT 1 FROM "swipe" WHERE created_at::date = CURRENT_DATE AND swipper_user_id = $1 AND target_user_id = $2 AND swipe_type = 'like')`
+
+	if err = r.Database.GetContext(ctx, &resp, query, request.TargetUserId, valueCtx.UserId); err != nil {
+		err = helper.HandleError(err)
+	}
+
+	return
 }

@@ -51,6 +51,21 @@ func (mr *MockUserRepositoryMockRecorder) BeginTx(ctx interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BeginTx", reflect.TypeOf((*MockUserRepository)(nil).BeginTx), ctx)
 }
 
+// CheckMatch mocks base method.
+func (m *MockUserRepository) CheckMatch(ctx context.Context, request entity.SwipeRequest) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckMatch", ctx, request)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckMatch indicates an expected call of CheckMatch.
+func (mr *MockUserRepositoryMockRecorder) CheckMatch(ctx, request interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckMatch", reflect.TypeOf((*MockUserRepository)(nil).CheckMatch), ctx, request)
+}
+
 // CheckPremium mocks base method.
 func (m *MockUserRepository) CheckPremium(ctx context.Context) (*entity.GetUserDetailResponse, error) {
 	m.ctrl.T.Helper()

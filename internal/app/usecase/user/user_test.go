@@ -362,6 +362,7 @@ func TestSwipe(t *testing.T) {
 		mockRepository.EXPECT().CheckUserSwipped(ctx, *request).Return(false, nil)
 		mockRepository.EXPECT().BeginTx(ctx).Return(tx, nil)
 		mockRepository.EXPECT().CreateSwipe(ctx, tx, *request).Return(nil)
+		mockRepository.EXPECT().CheckMatch(ctx, *request).Return(true, nil)
 
 		// Only expect the CreateMatch to be called once when SwipeType is "Like"
 		mockRepository.EXPECT().CreateMatch(ctx, tx, *request).Return(nil).Times(1) // Adjusted Times here
@@ -386,6 +387,7 @@ func TestSwipe(t *testing.T) {
 		mockRepository.EXPECT().CheckUserSwipped(ctx, *request).Return(false, nil)
 		mockRepository.EXPECT().BeginTx(ctx).Return(tx, nil)
 		mockRepository.EXPECT().CreateSwipe(ctx, tx, *request).Return(nil)
+		mockRepository.EXPECT().CheckMatch(ctx, *request).Return(true, nil)
 		mockRepository.EXPECT().CommitTx(ctx, tx).Return(nil)
 
 		err := svc.Swipe(ctx, request)

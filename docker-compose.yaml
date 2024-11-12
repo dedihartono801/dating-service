@@ -1,6 +1,20 @@
 version: '3.8'
 
 services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: mypostgres
+      POSTGRES_PASSWORD: opklnm123
+      POSTGRES_DB: dating
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - bubble
+
   dating-service:
     container_name: dating-service
     restart: always
@@ -13,19 +27,8 @@ services:
       - '5004:5004'
     networks:
       - bubble
-
-  postgres:
-    image: postgres:latest
-    container_name: postgresql
-    environment:
-      POSTGRES_USER: mypostgres
-      POSTGRES_PASSWORD: opklnm123
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - bubble
+    depends_on:
+      - postgres
 
 
 volumes:
