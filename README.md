@@ -28,6 +28,8 @@ brief description of the folder structure:
 
 7. `Jenkinsfile`: Script deployment using jenkins
 
+8. `Makefile`: Shortcut Command
+
 ## ERD Diagram
 
 ![alt text](https://github.com/dedihartono801/dating-service/blob/master/erd.png)
