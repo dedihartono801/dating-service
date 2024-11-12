@@ -28,6 +28,14 @@ brief description of the folder structure:
 
 7. `Jenkinsfile`: Script deployment using jenkins
 
+## ERD Diagram
+
+![alt text](https://github.com/dedihartono801/dating-service/blob/master/erd.png)
+
+## Sequence Diagram
+
+![alt text](https://github.com/dedihartono801/dating-service/blob/master/sequence-diagram.png)
+
 ## Install Migration
 
 go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
@@ -36,16 +44,10 @@ go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@lat
 
 go install github.com/golang/mock/mockgen@v1.6.0
 
-## Create Mock repository
+## Create .env file
 
-```
-mockgen -source="YOUR_GO_INTERFACE" -destination="YOUR_MOCK_DESTINATION"
-```
-
-Example:
-
-```
-mockgen -source="./internal/app/repository/user/user.go" -destination="./internal/app/repository/user/mocks/user_mock.go"
+```bash
+$ ./entrypoint.sh
 ```
 
 ## Run Service With Docker
@@ -79,18 +81,23 @@ $ make migration
 #type your migration name example: create_create_table_users
 ```
 
-## Create .env file
+## Generate Mock repository
 
-```bash
-$ ./entrypoint.sh
+- Open Makefile
+- Add this code section mock:
+
+```
+mockgen -source="YOUR_GO_INTERFACE" -destination="YOUR_MOCK_DESTINATION"
 ```
 
-## Generate JWT Secret
+Example:
+
+```
+mockgen -source="./internal/app/repository/user/user.go" -destination="./internal/app/repository/user/mocks/user_mock.go"
+```
 
 ```bash
-#install openssl on your OS and run command below
-$ make generate-jwt-secret
-#copy the secret key and then create new env called JWT_SECRET in .env file:
+$ make mock
 ```
 
 ## Run Unit Test and Test Coverage
@@ -180,11 +187,3 @@ $ curl --location 'http://localhost:5004/transaction' \
     "currency":"IDR"
 }'
 ```
-
-## ERD Diagram
-
-![alt text](https://github.com/dedihartono801/dating-service/blob/master/erd.png)
-
-## Sequence Diagram
-
-![alt text](https://github.com/dedihartono801/dating-service/blob/master/sequence-diagram.png)
