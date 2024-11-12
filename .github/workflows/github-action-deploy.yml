@@ -1,0 +1,78 @@
+name: Docker Build and Deploy
+
+on:
+  workflow_dispatch:
+    branches:
+      - master
+    inputs:
+      tags:
+        description: 'Docker Tag'
+        required: true
+        type: string
+
+  pull_request:
+    types: 
+      - closed
+    branches:
+      - development
+
+env:
+  servicename: 'my-service-github'
+  projectdocker: 'ciao'
+  dockerapppath: '/root/'
+  dockernetwork: 'ciao'
+
+jobs:
+  deploy_staging:
+    runs-on: self-hosted
+
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Build Docker Image
+        run: |
+          echo 'Build Image'
+          sudo docker build . -t "${{ env.servicename }}:development-latest"
+
+      - name: Docker Login, Tag, and Push
+        run: |
+          echo 'Push docker image to docker registry Harbor'
+          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY_URL }} -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" --password-stdin
+          docker tag ${{ env.servicename }}:development-latest ${{ secrets.DOCKER_REGISTRY_NON_PROTOCOL }}/${{ env.projectdocker }}/${{ env.servicename }}:development-latest
+          docker push ${{ secrets.DOCKER_REGISTRY_NON_PROTOCOL }}/${{ env.projectdocker }}/${{ env.servicename }}:development-latest
+
+      - name: Pull Image and Run Container
+        run: |
+          echo ssh connecting...
+          ssh -o StrictHostKeyChecking=no -l ${{ secrets.USER_STAGING_SERVER }} ${{secrets.STAGING_SERVER}} -p 22 "pwd; if sudo docker inspect ${{env.servicename}}-staging &> /dev/null 2>&1; then sudo docker rm ${{env.servicename}}-staging -f; fi"
+          ssh -o StrictHostKeyChecking=no -l ${{ secrets.USER_STAGING_SERVER }} ${{secrets.STAGING_SERVER}} -p 22 "docker pull ${{secrets.DOCKER_REGISTRY_NON_PROTOCOL}}/${{env.projectdocker}}/${{env.servicename}}:development-latest; sudo docker run -d -p 9393:9393 --name ${{env.servicename}}-staging --network=${{env.dockernetwork}} -v ${{env.envfullpath}}/development/.env:${{env.dockerapppath}}.env ${{secrets.DOCKER_REGISTRY_NON_PROTOCOL}}/${{env.projectdocker}}/${{env.servicename}}:development-latest"
+
+  deploy_prod:
+    runs-on: self-hosted
+
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Build Docker Image
+        run: |
+          echo 'Build Image'
+          sudo docker build . -t "${{ env.servicename }}:master-${{ github.event.inputs.tags }}"
+
+      - name: Docker Login, Tag, and Push
+        run: |
+          echo 'Push docker image to docker registry Harbor'
+          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login ${{ secrets.DOCKER_REGISTRY_URL }} -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" --password-stdin
+          docker tag ${{ env.servicename }}:master-${{ github.event.inputs.tags }} ${{ secrets.DOCKER_REGISTRY_NON_PROTOCOL }}/${{ env.projectdocker }}/${{ env.servicename }}:master-${{ github.event.inputs.tags }}
+          docker push ${{ secrets.DOCKER_REGISTRY_NON_PROTOCOL }}/${{ env.projectdocker }}/${{ env.servicename }}:master-${{ github.event.inputs.tags }}
+
+      - name: Pull Image and Run Container
+        run: |
+          echo ssh connecting...
+          ssh -o StrictHostKeyChecking=no -l ${{ secrets.USER_PRD_SERVER }} ${{secrets.PRD_SERVER}} -p 22 "pwd; if sudo docker inspect ${{env.servicename}}-master &> /dev/null 2>&1; then sudo docker rm ${{env.servicename}}-master -f; fi"
+          ssh -o StrictHostKeyChecking=no -l ${{ secrets.USER_PRD_SERVER }} ${{secrets.PRD_SERVER}} -p 22 "docker pull ${{secrets.DOCKER_REGISTRY_NON_PROTOCOL}}/${{env.projectdocker}}/${{env.servicename}}:master-${{ github.event.inputs.tags }}; sudo docker run -d -p 9393:9393 --name ${{env.servicename}}-master --network=${{env.dockernetwork}} -v ${{env.envfullpath}}/master/.env:${{env.dockerapppath}}.env ${{secrets.DOCKER_REGISTRY_NON_PROTOCOL}}/${{env.projectdocker}}/${{env.servicename}}:master-${{ github.event.inputs.tags }}"

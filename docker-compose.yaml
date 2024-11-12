@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  dating-service:
+    container_name: dating-service
+    restart: always
+    volumes:
+      - .:/app
+    build:
+      context: .
+      dockerfile: cmd/DockerfileDev
+    ports:
+      - '5004:5004'
+    networks:
+      - bubble
+
+  postgres:
+    image: postgres:latest
+    container_name: postgresql
+    environment:
+      POSTGRES_USER: mypostgres
+      POSTGRES_PASSWORD: opklnm123
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - bubble
+
+
+volumes:
+  postgres-data:
+
+networks:
+  bubble:
