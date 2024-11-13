@@ -30,7 +30,7 @@ COPY . .
 RUN go mod vendor
 
 # Build the Go app into binary file
-RUN  go build -o ${APP_NAME} -v ./cmd/http
+RUN  go build -o ${APP_NAME} -v ./cmd
 
 RUN go get gopkg.in/DataDog/dd-trace-go.v1/ddtrace
 
@@ -48,7 +48,7 @@ COPY --from=builder /app/${APP_NAME} .
 COPY --from=builder /app/.env .
 
 # Expose application port
-EXPOSE 5001
+EXPOSE 5004
 
 # Command to start the application
 CMD ["./myapp"]
